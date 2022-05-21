@@ -1,0 +1,13 @@
+[Unit]
+Description=IPTV support for the UniFi Dream Machine
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/lib/udm-igmpproxy/udm-igmpproxy start
+ExecStop=/usr/lib/udm-igmpproxy/udm-igmpproxy stop
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

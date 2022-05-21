@@ -1,0 +1,54 @@
+#!/bin/sh
+
+_igmpproxy_build_config() {
+    echo "# igmpproxy configuration for udm-igmpproxy"
+    echo "quickleave"
+
+    echo "# upstream = modem interface"
+    echo "phyint eth4 upstream ratelimit 0 threshold 1"
+    echo "  altnet 0.0.0.0/0"
+
+    echo "# lan interface of iptv device"
+    echo "phyint br2 downstream ratelimit 0 threshold 1"
+    echo "  altnet 0.0.0.0/0"
+
+    echo "# disable all unused interfaces"
+    echo "phyint lo disabled"
+    echo "phyint eth4 disabled"
+}
+
+_igmpproxy_setup() {
+    echo "Setting up igmpproxy"
+    _igmpproxy_build_config >/var/run/igmpproxy.iptv.conf
+}
+
+_igmpproxy_start() {
+    echo "Starting igmpproxy"
+    # debug: -d -v
+    args=""
+    # shellcheck disable=SC2086
+    exec igmpproxy -n $args "$@" /var/run/igmpproxy.iptv.conf
+}
+
+_igmpproxy_teardown() {
+    rm -f /var/run/igmpproxy.iptv.conf
+}
+
+if [ $# -eq 0 ]; then
+    exit 1
+fi
+
+case $1 in
+    start)
+        shift
+        _igmpproxy_setup
+        _igmpproxy_start "$@"
+        ;;
+    stop)
+        shift
+        _igmpproxy_teardown
+        ;;
+    *)
+        exit 1
+        ;;
+esac
